@@ -1,6 +1,114 @@
 {
   "version": 2,
-  "projects": {},
+  "projects": {
+    "tech-arch-myapi": {
+      "root": "apps/tech-arch/myapi",
+      "sourceRoot": "apps/tech-arch/myapi/src",
+      "projectType": "application",
+      "prefix": "tech-arch-myapi",
+      "generators": {},
+      "targets": {
+        "build": {
+          "executor": "@flowaccount/nx-serverless:build",
+          "options": {
+            "outputPath": "dist/apps/tech-arch/myapi",
+            "package": "apps/tech-arch/myapi",
+            "serverlessConfig": "apps/tech-arch/myapi/serverless.yml",
+            "servicePath": "apps/tech-arch/myapi",
+            "tsConfig": "apps/tech-arch/myapi/tsconfig.app.json",
+            "provider": "aws",
+            "processEnvironmentFile": "env.json"
+          },
+          "configurations": {
+            "dev": {
+              "optimization": false,
+              "sourceMap": false,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                }
+              ]
+            },
+            "production": {
+              "optimization": true,
+              "sourceMap": false,
+              "extractCss": true,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "apps/tech-arch/myapi/environment.ts",
+                  "with": "apps/tech-arch/myapi/environment.prod.ts"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "executor": "@flowaccount/nx-serverless:offline",
+          "options": {
+            "buildTarget": "tech-arch-myapi:build",
+            "config": "apps/tech-arch/myapi/serverless.yml",
+            "location": "dist/apps/tech-arch/myapi",
+            "port": 7777
+          },
+          "configurations": {
+            "dev": {
+              "buildTarget": "tech-arch-myapi:build:dev"
+            },
+            "production": {
+              "buildTarget": "tech-arch-myapi:build:production"
+            }
+          }
+        },
+        "deploy": {
+          "executor": "@flowaccount/nx-serverless:deploy",
+          "options": {
+            "buildTarget": "tech-arch-myapi:build:production",
+            "config": "apps/tech-arch/myapi/serverless.yml",
+            "location": "dist/apps/tech-arch/myapi",
+            "package": "dist/apps/tech-arch/myapi",
+            "stage": "dev",
+            "packager": "npm"
+          }
+        },
+        "destroy": {
+          "executor": "@flowaccount/nx-serverless:destroy",
+          "options": {
+            "buildTarget": "tech-arch-myapi:build:production",
+            "config": "apps/tech-arch/myapi/serverless.yml",
+            "location": "dist/apps/tech-arch/myapi",
+            "package": "dist/apps/tech-arch/myapi"
+          }
+        },
+        "lint": {
+          "executor": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "exclude": ["**/node_modules/**", "!apps/tech-arch/myapi/**/*"],
+            "tsConfig": ["apps/tech-arch/myapi/tsconfig.spec.json"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/apps/tech-arch/myapi"],
+          "options": {
+            "jestConfig": "apps/tech-arch/myapi/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    }
+  },
   "cli": {
     "defaultCollection": "@nrwl/workspace"
   }

@@ -5,11 +5,17 @@ plugins:
 package:
   individually: true
   excludeDevDependencies: false
+custom:
+  dev_APP_STAGE: 'DEV STAGE'
+  prod_APP_STAGE: 'PROD STAGE'
 provider:
   name: aws
   region: us-east-2
+  stage: ${opt:stage, 'dev'}
+  runtime: nodejs14.x
+  environment:
+    APP_STAGE: ${self:custom.${opt:stage, self:provider.stage}_APP_STAGE}
 
-  runtime: nodejs10.x
 functions:
   hello-world:
     handler: src/handler.helloWorld
@@ -17,3 +23,36 @@ functions:
       - http:
           path: hello-world
           method: get
+          cors: true
+
+resources:
+  Resources:
+    ApiGatewayDeploymentProd:
+      Type: AWS::ApiGateway::Deployment
+      Properties:
+        RestApiId: !Ref ApiGatewayRestApi
+        Description: 'Prod Deployment'
+        StageName: 'prod'
+      DependsOn:
+        - ApiGatewayMethodHelloDashworldOptions
+        - ApiGatewayMethodHelloDashworldGet
+
+  # Outputs:
+  #   ServiceEndpointProd:
+  #     Description: URL of the production service endpoint
+  #     Value:
+  #       'Fn::Join':
+  #         [
+  #           '',
+  #           [
+  #             'https://',
+  #             !Ref ApiGatewayRestApi,
+  #             '.execute-api.',
+  #             'us-east-2',
+  #             '.',
+  #             '!Ref: AWS::URLSuffix',
+  #             '/prod',
+  #           ],
+  #         ]
+  #     Export:
+  #       Name: 'sls-myapi-prod-ServiceEndpoint'
